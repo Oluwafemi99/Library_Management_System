@@ -11,27 +11,29 @@ class LibraryUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
     class Meta:
-        models = LibraryUser
-        fields = '__all__'
+        model = LibraryUser
+        fields = ['id', 'username', 'password', 'email', 'first_name', 'last_name', 'Date_of_Membership', 'Active_Status', 'books_checked_out']
 
     def create(self, validated_data):
-        # Create the user with the provided data
-        user = get_user_model().objects.create_user(
-            username=validated_data.get('username'),
-            email=validated_data.get('email'),
-            password=validated_data.get('password'),
-        )
+        # Extract the password from validated_data
+        password = validated_data.pop('password')
+
+        # Create the user with the remaining data
+        user = LibraryUser.objects.create(**validated_data)
+        user.set_password(password)  # Set the password securely
+        user.save()
+
         return user
 
 
 class BooksSerializer(serializers.ModelSerializer):
 
     class Meta:
-        models = Books
-        feilds = '__all__'
+        model = Books
+        fields = ['id', 'Title', 'Author', 'ISBN', 'Published_Date', 'Number_of_Copies_Available']
 
     def validate(self, data):
         Published_Date = data.get('Published_Date')
-        if Published_Date > date.today().year:
+        if Published_Date.year > date.today().year:
             raise serializers.ValidationError("Publication year cannot be in the future.")
-        return Published_Date
+        return data
