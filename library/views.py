@@ -104,7 +104,8 @@ class BookReturnView(generics.UpdateAPIView):
         user = request.user
 
     # Check if the user has checked out this book
-        transaction = Transaction.objects.filter(user=user, book=book, return_date__isnull=True).first()
+        transaction = Transaction.objects.filter(user=user, book=book).first()
+        print(transaction)
         if not transaction:
             return Response({"error": "You have not checked out this book."}, status=status.HTTP_400_BAD_REQUEST)
 
